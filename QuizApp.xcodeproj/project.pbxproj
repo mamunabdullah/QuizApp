@@ -12,6 +12,7 @@
 		4280FC932C6E3B93000BE947 /* QuizService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4280FC922C6E3B93000BE947 /* QuizService.swift */; };
 		4280FC952C6E4C81000BE947 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4280FC942C6E4C81000BE947 /* Extensions.swift */; };
 		4280FC972C6E4F0A000BE947 /* CongratsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4280FC962C6E4F0A000BE947 /* CongratsViewController.swift */; };
+		4280FC992C6E5E71000BE947 /* AlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4280FC982C6E5E71000BE947 /* AlertViewController.swift */; };
 		4280FD972C6CF3700069827A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4280FD962C6CF3700069827A /* AppDelegate.swift */; };
 		4280FD992C6CF3700069827A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4280FD982C6CF3700069827A /* SceneDelegate.swift */; };
 		4280FD9E2C6CF3700069827A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4280FD9C2C6CF3700069827A /* Main.storyboard */; };
@@ -52,6 +53,7 @@
 		4280FC922C6E3B93000BE947 /* QuizService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizService.swift; sourceTree = "<group>"; };
 		4280FC942C6E4C81000BE947 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		4280FC962C6E4F0A000BE947 /* CongratsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CongratsViewController.swift; sourceTree = "<group>"; };
+		4280FC982C6E5E71000BE947 /* AlertViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertViewController.swift; sourceTree = "<group>"; };
 		4280FD932C6CF3700069827A /* QuizApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuizApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4280FD962C6CF3700069827A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4280FD982C6CF3700069827A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -193,6 +195,7 @@
 				4280FDCB2C6D37CF0069827A /* HomeViewController.swift */,
 				4280FDD02C6D406A0069827A /* QuestionAnswerViewController.swift */,
 				4280FC962C6E4F0A000BE947 /* CongratsViewController.swift */,
+				4280FC982C6E5E71000BE947 /* AlertViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -368,6 +371,7 @@
 				4280FC902C6E39EA000BE947 /* Model.swift in Sources */,
 				4280FD992C6CF3700069827A /* SceneDelegate.swift in Sources */,
 				4280FDCC2C6D37CF0069827A /* HomeViewController.swift in Sources */,
+				4280FC992C6E5E71000BE947 /* AlertViewController.swift in Sources */,
 				4280FC972C6E4F0A000BE947 /* CongratsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
