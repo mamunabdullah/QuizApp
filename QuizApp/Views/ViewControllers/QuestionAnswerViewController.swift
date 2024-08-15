@@ -20,6 +20,13 @@ class QuestionAnswerViewController: UIViewController {
     private var selectedAnswerKey: String? = nil
     private var correctAnswerKey: String? = nil
     
+    private var grayBackgroundView: UIView!
+    private var redLoaderView: UIView!
+    private var widthConstraint: NSLayoutConstraint!
+    private var totalTime: TimeInterval = 10.0
+    private var elapsedTime: TimeInterval = 0.0
+    private var timer: Timer?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         optionsTableView.delegate = self
@@ -27,11 +34,14 @@ class QuestionAnswerViewController: UIViewController {
         
         setupBackgroundGradient()
         setupCustomBackButton()
+        setupTimeLoaderView()
+        startLoaderAnimation()
         
         viewModel.fetchQuestions { [weak self] in
             DispatchQueue.main.async {
                 if self?.viewModel.hasQuestions() ?? false {
                     self?.updateUI()
+                    self?.resetAndStartTimeLoader()
                 } else {
                     print("No questions available.")
                 }
@@ -39,6 +49,97 @@ class QuestionAnswerViewController: UIViewController {
         }
         
     }
+    
+    //Time Loader Start
+    private func setupGrayBackgroundView() {
+        // Create the gray background view with corner radius
+        grayBackgroundView = UIView()
+        grayBackgroundView.backgroundColor = .gray
+        grayBackgroundView.layer.cornerRadius = 6
+        grayBackgroundView.clipsToBounds = true
+        grayBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        timerSubView.addSubview(grayBackgroundView)
+        
+        // Set constraints for gray background view
+        NSLayoutConstraint.activate([
+            grayBackgroundView.leadingAnchor.constraint(equalTo: timerSubView.leadingAnchor, constant: 40),
+            grayBackgroundView.trailingAnchor.constraint(equalTo: timerSubView.trailingAnchor, constant: -40),
+            grayBackgroundView.topAnchor.constraint(equalTo: timerSubView.topAnchor),
+            grayBackgroundView.bottomAnchor.constraint(equalTo: timerSubView.bottomAnchor)
+        ])
+    }
+
+    private func setupTimeLoaderView() {
+        // Initialize the gray background view
+        grayBackgroundView = UIView()
+        grayBackgroundView.backgroundColor = UIColor(rgb: 0xE3E6EA)
+        grayBackgroundView.layer.cornerRadius = 6
+        grayBackgroundView.clipsToBounds = true
+        grayBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        timerSubView.addSubview(grayBackgroundView)
+
+        // Set constraints for gray background view
+        NSLayoutConstraint.activate([
+            grayBackgroundView.leadingAnchor.constraint(equalTo: timerSubView.leadingAnchor, constant: 40),
+            grayBackgroundView.trailingAnchor.constraint(equalTo: timerSubView.trailingAnchor, constant: -40),
+            grayBackgroundView.topAnchor.constraint(equalTo: timerSubView.topAnchor),
+            grayBackgroundView.bottomAnchor.constraint(equalTo: timerSubView.bottomAnchor)
+        ])
+
+        // Initialize the red loader view
+        redLoaderView = UIView()
+        redLoaderView.backgroundColor = UIColor(rgb: 0xBE1E2D)
+        redLoaderView.layer.cornerRadius = 6
+        redLoaderView.clipsToBounds = true
+        redLoaderView.translatesAutoresizingMaskIntoConstraints = false
+        grayBackgroundView.addSubview(redLoaderView)
+
+        // Set constraints for red loader view
+        NSLayoutConstraint.activate([
+            redLoaderView.leadingAnchor.constraint(equalTo: grayBackgroundView.leadingAnchor),
+            redLoaderView.topAnchor.constraint(equalTo: grayBackgroundView.topAnchor),
+            redLoaderView.bottomAnchor.constraint(equalTo: grayBackgroundView.bottomAnchor)
+        ])
+
+        // Set the initial width constraint for the red loader view
+        widthConstraint = redLoaderView.widthAnchor.constraint(equalToConstant: grayBackgroundView.frame.width)
+        widthConstraint.isActive = true
+    }
+    @objc private func updateTimeLoader() {
+        elapsedTime += 1.0
+        let remainingTime = totalTime - elapsedTime
+        let newWidth = grayBackgroundView.frame.width * CGFloat(remainingTime / totalTime)
+        
+        UIView.animate(withDuration: 1.0) {
+            self.widthConstraint.constant = newWidth
+            self.grayBackgroundView.layoutIfNeeded()
+        }
+        
+        if elapsedTime >= totalTime {
+            timer?.invalidate()
+            moveToNextQuestion()
+        }
+    }
+
+    private func resetAndStartTimeLoader() {
+        // Reset the elapsed time and width constraint
+        elapsedTime = 0.0
+        
+        // Set the red loader's width back to full width of the gray background view
+        widthConstraint.constant = grayBackgroundView.frame.width
+        grayBackgroundView.layoutIfNeeded()
+        
+        // Start the loader animation
+        startLoaderAnimation()
+    }
+
+
+    private func startLoaderAnimation() {
+        elapsedTime = 0.0
+        timer?.invalidate()  // Invalidate any existing timer
+        timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimeLoader), userInfo: nil, repeats: true)
+    }
+    //Time Loader End
     
     private func setupBackgroundGradient() {
         GradientHelper.applyGradient(to: self.view, colors: [
@@ -128,6 +229,8 @@ class QuestionAnswerViewController: UIViewController {
             }
         }
         
+        resetAndStartTimeLoader()
+        
     }
     
     private func navigateToNextQuestionOrFinish() {
@@ -136,7 +239,17 @@ class QuestionAnswerViewController: UIViewController {
             optionsTableView.allowsSelection = true
             updateUI()
         } else {
-            print("End of quiz")
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            if let VC = storyboard.instantiateViewController(withIdentifier: "CongratsViewController") as? CongratsViewController {
+                VC.modalPresentationStyle = .overCurrentContext
+                VC.modalTransitionStyle = .crossDissolve
+                
+                VC.correctAnswerCount = viewModel.getCorrectAnswerCount()
+                VC.totalQuestions = viewModel.totalQuestions
+                VC.totalScore = viewModel.getTotalScore()
+                
+                present(VC, animated: true, completion: nil)
+            }
         }
     }
     @objc private func moveToNextQuestion() {

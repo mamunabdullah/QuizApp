@@ -22,10 +22,10 @@ class OptionTableViewCell: UITableViewCell {
     }
     
     func setSelectedState(isCorrect: Bool) {
-        cellView.backgroundColor = isCorrect ? .green : .red
+        cellView.backgroundColor = isCorrect ? UIColor(rgb: 0xCBFCCB) : UIColor(rgb: 0xFF0000)
     }
     
     func highlightAsCorrect() {
-        cellView.backgroundColor = .green
+        cellView.backgroundColor = UIColor(rgb: 0xCBFCCB)
     }
 }
