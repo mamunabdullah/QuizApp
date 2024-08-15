@@ -10,16 +10,22 @@ import UIKit
 class OptionTableViewCell: UITableViewCell {
     @IBOutlet weak var cellView: CustomView!
     @IBOutlet weak var optionLabel: UILabel!
-
+    
+    var correctAnswerKey: String?
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
+        resetState()  
     }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+    
+    func resetState() {
+        cellView.backgroundColor = .clear
     }
-
+    
+    func setSelectedState(isCorrect: Bool) {
+        cellView.backgroundColor = isCorrect ? .green : .red
+    }
+    
+    func highlightAsCorrect() {
+        cellView.backgroundColor = .green
+    }
 }

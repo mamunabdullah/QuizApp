@@ -16,6 +16,10 @@ class QuestionAnswerViewController: UIViewController {
     @IBOutlet weak var timerSubView: UIView!
     @IBOutlet weak var optionsTableView: UITableView!
     
+    private var viewModel = QuestionAnswerViewModel()
+    private var selectedAnswerKey: String? = nil
+    private var correctAnswerKey: String? = nil
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         optionsTableView.delegate = self
@@ -23,6 +27,16 @@ class QuestionAnswerViewController: UIViewController {
         
         setupBackgroundGradient()
         setupCustomBackButton()
+        
+        viewModel.fetchQuestions { [weak self] in
+            DispatchQueue.main.async {
+                if self?.viewModel.hasQuestions() ?? false {
+                    self?.updateUI()
+                } else {
+                    print("No questions available.")
+                }
+            }
+        }
         
     }
     
@@ -65,7 +79,7 @@ class QuestionAnswerViewController: UIViewController {
     }
     
     private func startTimer(label: UILabel) {
-        var remainingTime = 300 // 5 minutes in seconds
+        var remainingTime = 180
         
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             if remainingTime > 0 {
@@ -84,23 +98,106 @@ class QuestionAnswerViewController: UIViewController {
         self.navigationController?.popViewController(animated: true)
     }
     
+    private func updateUI() {
+        guard let question = viewModel.currentQuestion else {
+            print("No current question available.")
+            return
+        }
+        
+        questionNumberLabel.text = viewModel.getQuestionNumber()
+        scoreLabel.text = "Score: \(viewModel.getScore() ?? 0)"
+        questionLabel.text = question.question
+        
+        viewModel.getQuestionImage { [weak self] image in
+            DispatchQueue.main.async {
+                if image == nil{
+                    self?.questionImage.image = UIImage(named: "JRF Card")
+                }else{
+                    self?.questionImage.image = image
+                }
+            }
+        }
+        
+        correctAnswerKey = question.correctAnswer  // Store the correct answer key
+        
+        optionsTableView.reloadData()
+        
+        for i in 0..<optionsTableView.numberOfRows(inSection: 0) {
+            if let cell = optionsTableView.cellForRow(at: IndexPath(row: i, section: 0)) as? OptionTableViewCell {
+                cell.resetState()
+            }
+        }
+        
+    }
+    
+    private func navigateToNextQuestionOrFinish() {
+        if let _ = viewModel.getNextQuestion() {
+            selectedAnswerKey = nil
+            optionsTableView.allowsSelection = true
+            updateUI()
+        } else {
+            print("End of quiz")
+        }
+    }
+    @objc private func moveToNextQuestion() {
+        navigateToNextQuestionOrFinish()
+    }
+    
     @IBAction func nextButton(_ sender: Any) {
-       
+        navigateToNextQuestionOrFinish()
     }
 }
 
 extension QuestionAnswerViewController: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            return 4
+            return viewModel.currentQuestion?.answers.count ?? 0
         }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       let cell = tableView.dequeueReusableCell(withIdentifier: "OptionCell", for: indexPath) as? OptionTableViewCell
-    
-        cell?.optionLabel.text = "A"
-        return cell!
-    }
-    
+
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "OptionCell", for: indexPath) as? OptionTableViewCell else {
+                return UITableViewCell()
+            }
+            
+            cell.resetState()
+            
+            if let answers = viewModel.currentQuestion?.answers {
+                let answerKey = Array(answers.keys.sorted())[indexPath.row]
+                let answerText = answers[answerKey] ?? ""
+                cell.optionLabel.text = "\(answerKey). \(answerText)"
+                
+                if answerKey == correctAnswerKey {
+                    cell.correctAnswerKey = answerKey  // Store the correct answer key in the cell
+                }
+            }
+            
+            return cell
+        }
+
+        func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+            guard let answers = viewModel.currentQuestion?.answers else { return }
+            
+            let answerKey = Array(answers.keys.sorted())[indexPath.row]
+            selectedAnswerKey = answerKey
+            
+            let isCorrect = viewModel.isAnswerCorrect(selectedKey: answerKey)
+            
+            if let cell = tableView.cellForRow(at: indexPath) as? OptionTableViewCell {
+                cell.setSelectedState(isCorrect: isCorrect)
+            }
+            
+            if !isCorrect {
+                // Highlight the correct answer if the wrong one was selected
+                if let correctIndex = answers.keys.sorted().firstIndex(of: correctAnswerKey ?? "") {
+                    if let correctCell = tableView.cellForRow(at: IndexPath(row: correctIndex, section: 0)) as? OptionTableViewCell {
+                        correctCell.highlightAsCorrect()
+                    }
+                }
+            }
+            
+            tableView.allowsSelection = false
+            Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(moveToNextQuestion), userInfo: nil, repeats: false)
+
+        }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 55
     }
