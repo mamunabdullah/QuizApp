@@ -35,6 +35,10 @@ class HomeViewController: UIViewController {
        }
     
     @IBAction func playQuizButton(_ sender: Any) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+           if let questionAnswerVC = storyboard.instantiateViewController(withIdentifier: "QuestionAnswerVC") as? QuestionAnswerViewController {
+               self.navigationController?.pushViewController(questionAnswerVC, animated: true)
+           }
         
     }
     
